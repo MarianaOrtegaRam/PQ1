@@ -1,0 +1,221 @@
+/**
+ * JavaCC file
+ */
+
+ /*
+
+GRAMATICA...
+
+PROGRAMA - > COMANDO | ASIGNACION | PROCEDIMIENTO
+
+COMANDO - > FORWARD exp | CLEARSCREEN | PENUP | PENDOWN | HIDETURTLE | SHOWTURTLE
+| HOME | SETX exp | SETY exp | SETXY exp exp | SETHEADING exp | ARC expr exp | CHANGESHAPE exp
+| POS exp | XCOR | YCOR | HEADING | TOWARDS exp exp | LABEL STRING | SETLABELHEIGHT exp
+| REPEAT exp ACC END | BACK exp | SETWIDTH exp | SETCOLOR exp | PRINT exp | RANDOM | LEFT exp
+| RIGHT exp
+
+ASIGNACION - > MAKE VARIABlE exp | SUM VARIABLE expr | DIFFERENCE VARIABLE expr
+
+procedimiento -> TO PROCEDURE_NAME (parametros) acciones END | TO PROCEDURE_NAME : parametro parametros acciones END
+
+parametros -> VARIABLE parametros | ε
+
+exp - > NUMERO | VARIABLE
+
+NUMERO - > 0 | 1 | 2 | ... |9
+
+VARIABLE - > [a-zA-Z][a-zA-Z0-9]*
+
+STRING -> "\"" [^"]* "\""
+ */
+ 
+options {
+  IGNORE_CASE = true;
+  STATIC = false;
+}
+PARSER_BEGIN(SimpleLexer)
+
+ 
+public class SimpleLexer {
+
+	public int sigToken() {
+	   return ((jj_ntk==-1)?jj_ntk():jj_ntk);
+     }
+     
+     public void aceptar(int kind) throws ParseException {
+     		jj_consume_token(kind);
+     }
+     
+     public void avanzar() throws ParseException {
+		jj_consume_token(getNextToken().kind);
+     }
+
+ 
+} 
+
+PARSER_END(SimpleLexer)
+
+SKIP :
+{
+ 	" " | "\r" | "\t" | "\n"
+
+}
+TOKEN : /* OPERATORS */
+{
+	< AT: "@" >
+|	< OR: "|" >
+|   < OP: "(">
+|   < CP: ")"> 
+|   < OB:  "[">
+|   < CB: "]">
+|    <COMMA: ",">
+|    <PP: "::">
+
+}
+
+TOKEN : /* COMANDOS*/
+{
+	<FORWARD: "Forward" | "fd">
+| 	<CLEARSCREEN: "Clearscreen" | "cs"> 
+|	<PENUP: "Penup">
+| 	<PENDOWN: "Pendown">
+| 	<HIDETURTLE: "Hideturtle">
+|   <SHOWTURTLE: "Showturtle">
+|   <HOME: "Home">
+|   <SETX: "Setx">
+|   <SETY: "Sety">
+|   <SETXY: "Setxy">
+|   <SETHEADING: "Setheading" | "seth">
+|   <ARC: "Arc">
+|   <CHANGESHAPE: "Changeshape" | "csh">
+|   <POS: "Pos">
+|   <XCOR: "Xcor">
+|   <YCOR: "Ycor">
+|   <HEADING: "Heading">
+|   <TOWARDS: "Towards">
+|   <LABEL: "Label">
+|   <SETLABELHEIGHT: "Setlabelheight">
+|   <REPEAT: "repeat">
+|   <BACK: "Back" | "bk">
+|   <SETWIDTH: "Setwidth">
+|   <SETCOLOR: "Setcolor">
+|   <PRINT: "Print">
+|   <RANDOM: "Random">
+|   <LEFT: "Left" | "lt">
+|   <RIGHT: "Right" | "rt">
+|   <MAKE: "Make">
+|   <SUM: "Sum">
+|   <DIFFERENCE: "Difference">
+| 	<PROCEDURE: "To">
+|   <END: "end">
+|   <VARIABLE: (["a"-"z", "A"-"Z"])+ >
+}
+
+TOKEN :
+{
+    < INT: ( <DIGIT> )( <DIGIT> )* >
+|   < #DIGIT: "0" | "1" | "2"| "3" | "4" | "5" |  "6" | "7" | "8" |"9" >
+
+
+}
+
+
+int num() throws Error:
+{	
+	int total=1;
+	Token token;
+}
+
+{
+	(token=<INT>)
+
+	{ 
+		try {
+			total = Integer.parseInt(token.image);
+		} 
+		catch (NumberFormatException ee) 
+		{
+			// Dada la forma de <ENTERO>, sabemos que solo puede tener d�gitos y signo
+			// Si cae ac� es por que el signo era +
+			throw new Error("Numero demasiado grande"+token.image);
+		}
+		return total;
+     }
+}
+
+void Program() :
+{
+}
+{
+    (Command() | ProcedureDeclaration())*
+}
+
+void Command() :
+{
+}
+{
+    <FORWARD> Number() 
+|   <CLEARSCREEN> 
+|   <PENUP> 
+|   <PENDOWN> 
+|   <HIDETURTLE>
+|   <SHOWTURTLE> 
+|   <HOME>
+|   <SETX> Number()
+|   <SETY> Number()
+|   <SETXY> Number() Number()
+|   <SETHEADING> Number()
+|   <ARC> Number() Number()
+|   <CHANGESHAPE> Number()
+|   <POS>
+|   <XCOR>
+|   <YCOR>
+|   <HEADING>
+|   <TOWARDS>
+|   <LABEL> Variable()
+|   <SETLABELHEIGHT> Number()
+|   <REPEAT> Number() [Command()]
+|   <BACK> Number()
+|   <SETWIDTH> Number()
+|   <SETCOLOR> Number()
+|   <PRINT> Variable()
+|   <RANDOM> Number()
+|   <LEFT> Number()
+|   <RIGHT> Number()
+|   <MAKE> Variable()Number()
+|   <SUM> Number()Number()
+|   <DIFFERENCE> Number() Number()
+
+
+  
+ }
+
+void ProcedureDeclaration() :
+{}
+{
+    <PROCEDURE> ProcedureName() (ParameterName())* <END>
+}
+
+void ParameterName() :
+{}
+{
+    ":" (Variable())
+}
+
+void ProcedureName() :
+{}
+{
+    (Variable())
+}
+
+void Number() :
+{}
+{
+    <INT>
+}
+
+void Variable() :
+{}
+{
+    <VARIABLE>
+}
